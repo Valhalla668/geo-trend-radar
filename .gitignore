@@ -1,0 +1,25 @@
+# 依赖
+node_modules/
+.pnpm-store/
+
+# 本地数据（插件默认写到 ~/.dsh/geo-trend-radar，改到仓库内时也不要提交）
+drafts/
+reports/
+snapshots/
+alerts/
+topics/
+baseline/
+latest.json
+
+# 凭据：数据库口令写在插件 config 后不要提交
+.env
+.env.*
+*.local.yml
+config.local.yml
+
+# 系统与编辑器
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log

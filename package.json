@@ -1,0 +1,45 @@
+{
+  "name": "@local/geo-trend-radar",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Turns public hot lists into GEO topics, compliance alerts, competitor share of voice and audited content drafts. Ships with an example brand you can swap.",
+  "license": "MIT",
+  "keywords": ["dsh","dsh-plugin","geo","generative-engine-optimization","trendradar","hot-list","content-ops"],
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "lib",
+    "assets",
+    "test",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "docs",
+    "icon.svg",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node --test test/core.test.mjs test/boards.test.mjs test/audit.test.mjs test/sources.test.mjs test/snapshots.test.mjs test/draft.test.mjs test/db.test.mjs"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ]
+    }
+  },
+  "dependencies": {
+    "pg": "^8.23.1"
+  }
+}

@@ -1,0 +1,66 @@
+# 把下面这段合并进插件 config（与 platforms 同级）。
+# 两个实例可单独启用；只填一个也行，另一个保持 enabled: false。
+# 表名/字段名按你们现有表改 mapping，或用 sql.claims / sql.sku 直接覆盖查询。
+# 只读账号 + 最小授权；本文件是明文，不要提交到仓库。
+databases:
+  evidence:
+    enabled: true
+    host: 10.0.0.10
+    port: 5432
+    database: geo_evidence
+    user: geo_readonly
+    password: "填只读账号密码"
+    ssl: false
+    schema: public
+    connectTimeoutMs: 5000
+    statementTimeoutMs: 8000
+    maxRows: 200
+    # 表名与字段名全部可配；下面是我建议的结构，按你们现有表改这里即可
+    mapping:
+      tables:
+        claim: geo_claim
+        evidence: geo_evidence
+      columns:
+        claim:
+          claim_id: claim_id
+          sku_code: sku_code
+          claim_text: claim_text
+          limitations: limitations
+          status: status
+          approved_at: approved_at
+        evidence:
+          evidence_id: evidence_id
+          claim_id: claim_id
+          grade: grade
+          source: source
+          source_url: source_url
+          tested_at: tested_at
+          valid_until: valid_until
+          sample_size: sample_size
+          method: method
+  product:
+    enabled: true
+    host: 10.0.0.11
+    port: 5432
+    database: geo_product
+    user: geo_readonly
+    password: "填只读账号密码"
+    ssl: false
+    schema: public
+    mapping:
+      tables:
+        sku: geo_sku
+      columns:
+        sku:
+          sku_code: sku_code
+          product_name: product_name
+          brand: brand
+          category: category
+          spec: spec
+          price_cny: price_cny
+          price_updated: price_updated
+          shelf: shelf
+          skin_types: skin_types
+          filing_no: filing_no
+          launched_at: launched_at
+          status: status

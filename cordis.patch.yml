@@ -1,0 +1,11 @@
+- insert:
+    - id: geo-trend-radar
+      name: '@local/geo-trend-radar'
+      config:
+        platforms:
+          - zhihu
+          - weibo
+          - douyin
+          - baidu
+          - toutiao
+          - bilibili-hot-search

@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "GEO 热点雷达",
+    "description": "面向方里 FUNNY ELVES 的 GEO 监测插件：采集公开热榜，把热点转成八类内容簇的选题卡，同时给出负面与合规预警、竞品声量 SOV、T0 基线审计进度与公关日历窗口。",
+    "detail": "docs/DETAIL.md"
+  }
+}
