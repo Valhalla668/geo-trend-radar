@@ -50,17 +50,7 @@ pnpm install
 
 ## Python 版
 
-`python/` 是同一套规则的 Python 实现：CLI + 可导入库，零运行时依赖（连 PostgreSQL 时才需要 `psycopg`）。它**与插件共用同一个数据目录和 JSON 格式**，两个实现可以交替跑、结果逐行对比。
-
-```bash
-cd python
-pip install -e .            # 可选；也可以直接 python -m geo_radar
-geo-radar status
-geo-radar scan --label daily
-geo-radar topics --days 3
-```
-
-细节见 [`python/README.md`](python/README.md)。
+同一套规则的 Python 实现维护在独立仓库：[`geo-radar`](https://github.com/Valhalla668/geo-radar)。两个实现共用同一个数据目录与 JSON 格式，可以交替跑、结果逐行对比。
 
 ## 测试
 
@@ -68,8 +58,7 @@ geo-radar topics --days 3
 pnpm test
 ```
 
-当前 65 个测试，覆盖打分、选题卡、预警、准入、SQL 生成、快照读写、契约校验。
-Python 版另有 46 个 pytest 用例：`cd python && python -m pytest tests -q`。
+65 个测试，覆盖打分、选题卡、预警、准入、SQL 生成、快照读写、契约校验。
 
 ## 许可
 
