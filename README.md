@@ -48,6 +48,20 @@ pnpm install
 - `geo_draft` 不调用模型：它出骨架、校验契约。三道机械闸门是 G1 Schema、G2 证据绑定、G4 合规；G3 事实蕴含、G5 品牌语气与「三签」仍需人审。
 - 合规规则会识别否定语境（「不是最适合」放行并告警），但谐音、拆字、图片内文字拦不住，不能替代法务。
 
+## Python 版
+
+`python/` 是同一套规则的 Python 实现：CLI + 可导入库，零运行时依赖（连 PostgreSQL 时才需要 `psycopg`）。它**与插件共用同一个数据目录和 JSON 格式**，两个实现可以交替跑、结果逐行对比。
+
+```bash
+cd python
+pip install -e .            # 可选；也可以直接 python -m geo_radar
+geo-radar status
+geo-radar scan --label daily
+geo-radar topics --days 3
+```
+
+细节见 [`python/README.md`](python/README.md)。
+
 ## 测试
 
 ```bash
@@ -55,6 +69,7 @@ pnpm test
 ```
 
 当前 65 个测试，覆盖打分、选题卡、预警、准入、SQL 生成、快照读写、契约校验。
+Python 版另有 46 个 pytest 用例：`cd python && python -m pytest tests -q`。
 
 ## 许可
 
