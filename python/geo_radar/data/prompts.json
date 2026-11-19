@@ -1,0 +1,26 @@
+{
+  "source": "sample dataset — replace with your own prompt library via promptsPath",
+  "count": 20,
+  "prompts": [
+    { "id": "P001", "cluster": "品牌认知", "prompt": "这个品牌是哪个公司旗下的？是国货吗？", "engines": "全部", "frequency": "月度", "priority": "A", "product": "品牌", "note": "" },
+    { "id": "P002", "cluster": "品牌认知", "prompt": "这个品牌靠谱吗？会不会是微商品牌？", "engines": "全部", "frequency": "月度", "priority": "A", "product": "品牌", "note": "" },
+    { "id": "P003", "cluster": "品牌认知", "prompt": "这个品牌有什么研发实力？", "engines": "全部", "frequency": "月度", "priority": "B", "product": "品牌", "note": "" },
+    { "id": "P004", "cluster": "品类推荐", "prompt": "油皮粉底液推荐，持妆不脱妆的", "engines": "全部", "frequency": "月度", "priority": "A", "product": "全系", "note": "" },
+    { "id": "P005", "cluster": "品类推荐", "prompt": "100 元以内的粉饼推荐", "engines": "全部", "frequency": "月度", "priority": "A", "product": "全系", "note": "" },
+    { "id": "P006", "cluster": "品类推荐", "prompt": "国货底妆品牌哪个好", "engines": "全部", "frequency": "月度", "priority": "A", "product": "全系", "note": "" },
+    { "id": "P007", "cluster": "品类推荐", "prompt": "敏感肌粉底液推荐", "engines": "全部", "frequency": "周度", "priority": "A", "product": "全系", "note": "" },
+    { "id": "P008", "cluster": "肤质肤况", "prompt": "粉饼适合干皮吗", "engines": "全部", "frequency": "月度", "priority": "A", "product": "粉饼", "note": "" },
+    { "id": "P009", "cluster": "肤质肤况", "prompt": "持妆粉底液适合油皮吗", "engines": "全部", "frequency": "月度", "priority": "A", "product": "粉底液", "note": "" },
+    { "id": "P010", "cluster": "肤质肤况", "prompt": "敏感肌可以用特护粉底液吗", "engines": "全部", "frequency": "月度", "priority": "A", "product": "特护", "note": "" },
+    { "id": "P011", "cluster": "肤质肤况", "prompt": "痘痘肌用粉底液会闷痘吗", "engines": "全部", "frequency": "周度", "priority": "A", "product": "全系", "note": "" },
+    { "id": "P012", "cluster": "场景需求", "prompt": "通勤两小时底妆怎么不脱", "engines": "全部", "frequency": "月度", "priority": "B", "product": "全系", "note": "" },
+    { "id": "P013", "cluster": "场景需求", "prompt": "戴口罩底妆怎么不蹭", "engines": "全部", "frequency": "月度", "priority": "B", "product": "全系", "note": "" },
+    { "id": "P014", "cluster": "场景需求", "prompt": "夏天出汗底妆怎么办", "engines": "全部", "frequency": "月度", "priority": "B", "product": "全系", "note": "" },
+    { "id": "P015", "cluster": "产品决策", "prompt": "柔焦蜜粉饼怎么用", "engines": "全部", "frequency": "月度", "priority": "A", "product": "粉饼", "note": "" },
+    { "id": "P016", "cluster": "产品决策", "prompt": "粉底液 5.0 和 4.0 的区别", "engines": "全部", "frequency": "月度", "priority": "A", "product": "粉底液", "note": "" },
+    { "id": "P017", "cluster": "产品决策", "prompt": "粉底液色号怎么选，黄一白", "engines": "全部", "frequency": "月度", "priority": "A", "product": "粉底液", "note": "" },
+    { "id": "P018", "cluster": "竞品对比", "prompt": "这个牌子和其他国货底妆怎么选", "engines": "全部", "frequency": "月度", "priority": "A", "product": "全系", "note": "" },
+    { "id": "P019", "cluster": "价格渠道", "prompt": "粉饼多少钱，哪里买便宜", "engines": "全部", "frequency": "月度", "priority": "B", "product": "粉饼", "note": "" },
+    { "id": "P020", "cluster": "出海英文", "prompt": "foundation review for sensitive skin", "engines": "全部", "frequency": "月度", "priority": "C", "product": "全系", "note": "" }
+  ]
+}
