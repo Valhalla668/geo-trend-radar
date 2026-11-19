@@ -33,7 +33,9 @@
 
 ## 外部数据库（证据库 + 商品库）
 
-- **两个独立实例**：`databases.evidence` 与 `databases.product` 各自配 host/port/database/user/password/schema。
+- **两个独立实例**：`databases.evidence` 与 `databases.product` 各自配 host/port/database/user/schema。
+- **口令不落在 config 里**：用 `passwordEnv` 指定变量名（默认 `GEO_EVIDENCE_PASSWORD` / `GEO_PRODUCT_PASSWORD`），插件按「环境变量 > `.env` 文件 > config 明文（仅兼容）」解析。`.env` 默认找 `<数据目录>/.env`，其次插件目录 `.env`；也可用 `envFile` 指定路径。`geo_db` action=`env` 会打印该文件位置与所需变量名。
+- **只读账号**：建议单独开只读账号，并限制到需要的表。
 - **表名字段名全部可配**：`databases.*.mapping` 覆盖默认名；`databases.*.sql.claims` / `.sql.sku` 可直接换成自己的 SQL。
 - **只读保证**：每次连接后执行 `set session characteristics as transaction read only`，只做 select。
 - **超时**：`connectTimeoutMs`（默认 5000）与 `statementTimeoutMs`（默认 8000）。
@@ -41,8 +43,8 @@
 
 ### 接入顺序
 
-1. `geo_db` action=`template` 取配置模板。
-2. 填连接信息，先不写 mapping。
+1. `geo_db` action=`template` 取连接模板，action=`env` 看凭据该放哪。
+2. 填连接信息（先不写 mapping），把口令写进 `.env` 或设为环境变量。
 3. 重载插件 → `geo_db` action=`test` 确认连通。
 4. `geo_db` action=`schema` 导出真实表名与字段清单。
 5. 按清单改 `mapping`，或直接用 `sql` 覆盖查询。
@@ -85,5 +87,5 @@
 - 插件不驱动六大 AI 引擎，基线审计需人工（或后续自动化）把答案录回；事实核查条数与正确条数也由人填写。
 - 打分是规则打分，不理解语义：反讽、多义词会误判，选题卡优先级需人工确认。
 - `geo_draft` 的三道闸门也是规则：否定语境是启发式（限制词前 4 字内有否定词即放行并告警），谐音、拆字、繁体、图片内文字都拦不住，不能替代法务。
-- 数据库口令写在插件 config 里是明文；准入的「有效期」依赖证据表的 `valid_until`，为空视为长期有效，这是配置约定而非法律判断。
+- 数据库连接写在插件 config，口令写在 `.env` 或环境变量；`config` 里若残留明文 `password` 仍可用，但状态页会标为「明文，建议改掉」。准入的「有效期」依赖证据表的 `valid_until`，为空视为长期有效，这是配置约定而非法律判断。
 - 公共 newsnow 接口对机器人 User-Agent 会拦截，插件因此使用浏览器 UA 并串行请求；接口不可用时会明确报出失败平台与原因，不会用缓存或示例数据冒充真实结果。

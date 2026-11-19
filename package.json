@@ -25,7 +25,7 @@
     "README.md"
   ],
   "scripts": {
-    "test": "node --test test/core.test.mjs test/boards.test.mjs test/audit.test.mjs test/sources.test.mjs test/snapshots.test.mjs test/draft.test.mjs test/db.test.mjs"
+    "test": "node --test test/core.test.mjs test/boards.test.mjs test/audit.test.mjs test/sources.test.mjs test/snapshots.test.mjs test/draft.test.mjs test/db.test.mjs test/env.test.mjs"
   },
   "dsh": {
     "bundle": {

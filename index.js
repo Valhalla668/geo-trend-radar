@@ -12,6 +12,7 @@
  */
 import { readFile } from 'node:fs/promises'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { buildAlerts, renderAlertsMarkdown, summarizeAlerts } from './lib/alerts.js'
 import {
   computeMetrics,
@@ -23,6 +24,7 @@ import {
 import { annotateCalendar, calendarStatus, renderCalendarMarkdown } from './lib/calendar.js'
 import { buildPromptPack, CONTENT_CONTRACT, pickTemplate, renderDraftMarkdown, TEMPLATES, validateDraft } from './lib/draft.js'
 import { admitClaims, groupClaimRows, renderEvidenceMarkdown } from './lib/evidence.js'
+import { envTemplate } from './lib/envfile.js'
 import {
   buildClaimsQuery,
   buildSkuQuery,
@@ -31,6 +33,7 @@ import {
   describeInstance,
   introspectSchema,
   resolveDatabases,
+  resolveEnvFilePath,
   testConnection,
   withClient,
 } from './lib/pgdb.js'
@@ -62,6 +65,14 @@ export const inject = ['tools']
 
 const PROMPTS_URL = new URL('./assets/prompts.json', import.meta.url)
 const DEFAULT_KEEP_SNAPSHOTS = 60
+
+/** How a resolved database password was obtained, for status output only. */
+const PASSWORD_SOURCE_LABEL = {
+  environment: '环境变量',
+  'env-file': '.env 文件',
+  'config-plaintext': '插件 config（明文，建议改掉）',
+  none: '未提供',
+}
 
 let promptCache = null
 
@@ -287,7 +298,9 @@ export function apply(ctx, rawConfig = {}) {
     ? Number(config.keepSnapshots)
     : DEFAULT_KEEP_SNAPSHOTS
   const parsedKeywords = keywordGroups(config)
-  const databases = resolveDatabases(config)
+  const pluginRoot = fileURLToPath(new URL('.', import.meta.url))
+  // Resolved per call, so a rotated .env takes effect without reloading the plugin.
+  const readDatabases = () => resolveDatabases(config, { envFile: resolveEnvFilePath(config, paths.root, pluginRoot) })
 
   const tools = [
     {
@@ -696,6 +709,7 @@ export function apply(ctx, rawConfig = {}) {
         const contentId = typeof args.contentId === 'string' && args.contentId.trim().length > 0 ? args.contentId.trim() : suggestContentId()
 
         if (action === 'skeleton') {
+          const databases = readDatabases()
           const resolved = await resolveTopicCard(paths, args)
           if (resolved.error !== undefined) {
             return failure('TOPIC_NOT_FOUND', resolved.error, resolved.available.length === 0 ? undefined : `可用选题卡：${resolved.available.join('、')}`)
@@ -1145,7 +1159,7 @@ export function apply(ctx, rawConfig = {}) {
         additionalProperties: false,
         required: ['action'],
         properties: {
-          action: { type: 'string', enum: ['status', 'template', 'test', 'schema', 'sample'], description: 'status 状态，template 配置模板，test 连通性，schema 字段清单，sample 取样。' },
+          action: { type: 'string', enum: ['status', 'template', 'env', 'test', 'schema', 'sample'], description: 'status 状态，template 配置模板，env 凭据文件说明，test 连通性，schema 字段清单，sample 取样。' },
           instance: { type: 'string', enum: ['evidence', 'product'], description: '目标实例，默认 evidence（证据库）。' },
           tables: { type: 'array', items: { type: 'string' }, description: 'schema 用：只导出这些表的字段；省略则导出整个 schema。' },
           sku: { type: 'string', description: 'sample 用：按 SKU 过滤。' },
@@ -1155,8 +1169,48 @@ export function apply(ctx, rawConfig = {}) {
       isConcurrencySafe: () => false,
       timeoutMs: 40_000,
       async execute(args) {
-        const action = ['status', 'template', 'test', 'schema', 'sample'].includes(args.action) ? args.action : 'status'
+        const action = ['status', 'template', 'env', 'test', 'schema', 'sample'].includes(args.action) ? args.action : 'status'
         const instanceName = args.instance === 'product' ? 'product' : 'evidence'
+        const databases = readDatabases()
+
+        if (action === 'env') {
+          const body = envTemplate()
+          const lines = ['## 数据库凭据', '']
+          lines.push(`- 凭据文件：${databases.envFile === null ? '未指定（只读环境变量）' : databases.envFile}`)
+          if (databases.envFile !== null) lines.push(`- 文件状态：${databases.envFileExists ? '存在' : '不存在，按下面内容新建即可'}`)
+          lines.push('- 优先级：真实环境变量 > .env 文件 > 插件 config 里的明文口令（兼容用，不建议）')
+          for (const name of ['evidence', 'product']) {
+            const info = describeInstance(databases[name])
+            const label = name === 'evidence' ? '证据库' : '商品库'
+            if (info === null) {
+              lines.push(`- ${label}：未配置连接`)
+              continue
+            }
+            const source = PASSWORD_SOURCE_LABEL[info.passwordSource] ?? info.passwordSource
+            lines.push(`- ${label} 口令：${source}${info.passwordVariable === null ? '' : `（变量 ${info.passwordVariable}）`}`)
+            if (info.passwordWarning !== null) lines.push(`  - ⚠️ ${info.passwordWarning}`)
+          }
+          lines.push('')
+          lines.push('把下面两行写进凭据文件，或用同名环境变量注入：')
+          lines.push('')
+          lines.push('```dotenv')
+          lines.push(body)
+          lines.push('```')
+          return {
+            ok: true,
+            message: lines.join('\n'),
+            view: {
+              kind: 'geo.view',
+              view: 'db',
+              action: 'env',
+              envFile: databases.envFile,
+              envFileExists: databases.envFileExists,
+              evidence: describeInstance(databases.evidence),
+              product: describeInstance(databases.product),
+            },
+            template: body,
+          }
+        }
 
         if (action === 'template') {
           const body = configTemplate()
@@ -1177,14 +1231,21 @@ export function apply(ctx, rawConfig = {}) {
           }
           const lines = ['# GEO 数据库通道', '']
           lines.push(`- pg 驱动：${driverStatus === 'ok' ? '已安装' : '未安装（在插件目录执行 pnpm add pg）'}`)
+          lines.push(`- 凭据文件：${databases.envFile === null ? '未指定' : `${databases.envFile}${databases.envFileExists ? '' : '（不存在）'}`}`)
           for (const name of ['evidence', 'product']) {
             const info = describeInstance(databases[name])
             const label = name === 'evidence' ? '证据库' : '商品库'
-            lines.push(info === null ? `- ${label}：未配置` : `- ${label}：${info.target}　user=${info.user}　ssl=${info.ssl}　schema=${info.schema}　表=${Object.values(info.tables).join('、')}`)
+            if (info === null) {
+              lines.push(`- ${label}：未配置`)
+              continue
+            }
+            lines.push(`- ${label}：${info.target}　user=${info.user}　ssl=${info.ssl}　schema=${info.schema}　表=${Object.values(info.tables).join('、')}`)
+            lines.push(`  - 口令：${PASSWORD_SOURCE_LABEL[info.passwordSource] ?? info.passwordSource}${info.passwordVariable === null ? '' : `（变量 ${info.passwordVariable}）`}`)
+            if (info.passwordWarning !== null) lines.push(`  - ⚠️ ${info.passwordWarning}`)
           }
           if (databases.problems.length > 0) lines.push(`- 待补配置：${databases.problems.join('；')}`)
           lines.push('')
-          lines.push('下一步：`geo_db` action=template 取模板 → 填进插件 config → 重载插件 → action=test。凭据按你的选择写在插件 config 里，该文件是明文。')
+          lines.push('下一步：`geo_db` action=template 取连接模板、action=env 取凭据说明 → 填好后重载插件 → action=test。')
           return {
             ok: true,
             message: lines.join('\n'),
@@ -1196,6 +1257,8 @@ export function apply(ctx, rawConfig = {}) {
               evidence: describeInstance(databases.evidence),
               product: describeInstance(databases.product),
               problems: databases.problems,
+              envFile: databases.envFile,
+              envFileExists: databases.envFileExists,
             },
             driver: driverStatus,
             evidence: describeInstance(databases.evidence),
@@ -1304,6 +1367,7 @@ export function apply(ctx, rawConfig = {}) {
       timeoutMs: 40_000,
       async execute(args) {
         const action = args.action === 'sku' ? 'sku' : 'lookup'
+        const databases = readDatabases()
         const sku = typeof args.sku === 'string' && args.sku.trim().length > 0 ? args.sku.trim() : null
         const keyword = typeof args.keyword === 'string' && args.keyword.trim().length > 0 ? args.keyword.trim() : null
         const limit = Math.min(200, Math.max(1, Number(args.limit) || 50))

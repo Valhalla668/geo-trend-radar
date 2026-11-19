@@ -37,10 +37,10 @@ pnpm install
 
 - 热榜默认走与 TrendRadar 同源的 newsnow 接口；自建实例请配 `apiUrl`。
 - 提示词库是 `assets/prompts.json`（示例 20 条，覆盖八类内容簇），替换成你自己的题库即可。
-- 外部证据库与商品库的配置模板见 `docs/config.template.yml`，字段映射参考 `docs/sql/reference.sql`。
+- 外部证据库与商品库的连接写在插件 config，**口令走 `.env` 或环境变量**：`docs/config.template.yml` 给连接与字段映射，`.env.example` 给口令变量名。
 - 数据默认写在 `~/.dsh/geo-trend-radar`，可用 `dataDir` 覆盖。
 
-> 数据库口令写在插件 config 里就是明文。生产环境请只给只读账号，并限制到需要的表。
+> 口令优先级：真实环境变量 > `.env` 文件 > 插件 config 里的明文（仅兼容，会在状态里标警告）。`.env` 已被 `.gitignore` 排除，别提交。
 
 ## 规则与门槛
 

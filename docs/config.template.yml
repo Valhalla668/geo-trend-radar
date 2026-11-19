@@ -1,7 +1,7 @@
-# 把下面这段合并进插件 config（与 platforms 同级）。
-# 两个实例可单独启用；只填一个也行，另一个保持 enabled: false。
-# 表名/字段名按你们现有表改 mapping，或用 sql.claims / sql.sku 直接覆盖查询。
-# 只读账号 + 最小授权；本文件是明文，不要提交到仓库。
+# 连接信息合并进插件 config（与 platforms 同级）。
+# 口令不写在这里：用 .env 或环境变量，见 geo_db action=env。
+# 两个实例可单独启用；表名/字段名按现有表改 mapping，或用 sql.claims / sql.sku 覆盖查询。
+# 连接信息写在插件 config；口令不要写在这里，见 .env（geo_db action=env）
 databases:
   evidence:
     enabled: true
@@ -9,7 +9,8 @@ databases:
     port: 5432
     database: geo_evidence
     user: geo_readonly
-    password: "填只读账号密码"
+    # 口令来源：默认读 GEO_EVIDENCE_PASSWORD（环境变量优先，其次 .env）
+    passwordEnv: GEO_EVIDENCE_PASSWORD
     ssl: false
     schema: public
     connectTimeoutMs: 5000
@@ -44,7 +45,7 @@ databases:
     port: 5432
     database: geo_product
     user: geo_readonly
-    password: "填只读账号密码"
+    passwordEnv: GEO_PRODUCT_PASSWORD
     ssl: false
     schema: public
     mapping:

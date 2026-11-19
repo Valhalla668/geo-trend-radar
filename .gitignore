@@ -11,9 +11,10 @@ topics/
 baseline/
 latest.json
 
-# 凭据：数据库口令写在插件 config 后不要提交
+# 凭据：口令写进 .env，不要提交
 .env
 .env.*
+!.env.example
 *.local.yml
 config.local.yml
 
